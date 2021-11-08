@@ -323,19 +323,20 @@ class HBaseMasterMetricCollector(MetricCol):
         balancer_value, balancer_percentile = [], []
 
         for metric in self._metrics['Balancer']:
-            if '_min' in metric or '_max' in metric or '_mean' in metric or 'median' in metric:
-                self._hadoop_hbase_metrics['Balancer'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
-            elif 'BalancerCluster' in metric:
-                if '_num_ops' in metric:
-                    balancer_count = bean[metric]
-                    key = 'BalancerCluster'
+            if metric in bean:
+                if '_min' in metric or '_max' in metric or '_mean' in metric or 'median' in metric:
+                    self._hadoop_hbase_metrics['Balancer'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
+                elif 'BalancerCluster' in metric:
+                    if '_num_ops' in metric:
+                        balancer_count = bean[metric]
+                        key = 'BalancerCluster'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        balancer_percentile.append(str(float(per) / 100.0))
+                        balancer_value.append(bean[metric])
+                        balancer_sum += bean[metric]
                 else:
-                    per = metric.split("_")[1].split("th")[0]
-                    balancer_percentile.append(str(float(per) / 100.0))
-                    balancer_value.append(bean[metric])
-                    balancer_sum += bean[metric]
-            else:
-                self._hadoop_hbase_metrics['Balancer'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
+                    self._hadoop_hbase_metrics['Balancer'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
         balancer_bucket = zip(balancer_percentile, balancer_value)
         balancer_bucket.sort()
         balancer_bucket.append(("+Inf", balancer_count))
@@ -349,28 +350,29 @@ class HBaseMasterMetricCollector(MetricCol):
         bulkassign_value, bulkassign_percentile, assign_value, assign_percentile = [], [], [], []
 
         for metric in self._metrics['AssignmentManger']:
-            if '_min' in metric or '_max' in metric or '_mean' in metric or 'median' in metric:
-                self._hadoop_hbase_metrics['AssignmentManger'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
-            elif 'BulkAssign' in metric:
-                if '_num_ops' in metric:
-                    bulkassign_count = bean[metric]
-                    bulkassign_key = 'BulkAssign'
+            if metric in bean:
+                if '_min' in metric or '_max' in metric or '_mean' in metric or 'median' in metric:
+                    self._hadoop_hbase_metrics['AssignmentManger'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
+                elif 'BulkAssign' in metric:
+                    if '_num_ops' in metric:
+                        bulkassign_count = bean[metric]
+                        bulkassign_key = 'BulkAssign'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        bulkassign_percentile.append(str(float(per) / 100.0))
+                        bulkassign_value.append(bean[metric])
+                        bulkassign_sum += bean[metric]
+                elif 'Assign' in metric:
+                    if '_num_ops' in metric:
+                        assign_count = bean[metric]
+                        assign_key = 'Assign'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        assign_percentile.append(str(float(per) / 100.0))
+                        assign_value.append(bean[metric])
+                        assign_sum += bean[metric]
                 else:
-                    per = metric.split("_")[1].split("th")[0]
-                    bulkassign_percentile.append(str(float(per) / 100.0))
-                    bulkassign_value.append(bean[metric])
-                    bulkassign_sum += bean[metric]
-            elif 'Assign' in metric:
-                if '_num_ops' in metric:
-                    assign_count = bean[metric]
-                    assign_key = 'Assign'
-                else:
-                    per = metric.split("_")[1].split("th")[0]
-                    assign_percentile.append(str(float(per) / 100.0))
-                    assign_value.append(bean[metric])
-                    assign_sum += bean[metric]
-            else:
-                self._hadoop_hbase_metrics['AssignmentManger'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
+                    self._hadoop_hbase_metrics['AssignmentManger'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
         bulkassign_bucket = zip(bulkassign_percentile, bulkassign_value)
         bulkassign_bucket.sort()
         bulkassign_bucket.append(("+Inf", bulkassign_count))
@@ -389,64 +391,65 @@ class HBaseMasterMetricCollector(MetricCol):
         total_calltime_percentile, process_calltime_percentile, queue_calltime_percentile, response_percentile, request_percentile = [], [], [], [], []
 
         for metric in self._metrics['IPC']:
-            if '_min' in metric or '_max' in metric or '_mean' in metric or 'median' in metric or 'RangeCount_' in metric:
-                self._hadoop_hbase_metrics['IPC'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
-            elif 'TotalCallTime' in metric:
-                if '_num_ops' in metric:
-                    total_calltime_count = bean[metric]
-                    total_calltime_key = 'TotalCallTime'
+            if metric in bean:
+                if '_min' in metric or '_max' in metric or '_mean' in metric or 'median' in metric or 'RangeCount_' in metric:
+                    self._hadoop_hbase_metrics['IPC'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
+                elif 'TotalCallTime' in metric:
+                    if '_num_ops' in metric:
+                        total_calltime_count = bean[metric]
+                        total_calltime_key = 'TotalCallTime'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        total_calltime_percentile.append(str(float(per) / 100.0))
+                        total_calltime_value.append(bean[metric])
+                        total_calltime_sum += bean[metric]
+                elif 'ProcessCallTime' in metric:
+                    if '_num_ops' in metric:
+                        process_calltime_count = bean[metric]
+                        process_calltime_key = 'ProcessCallTime'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        process_calltime_percentile.append(str(float(per) / 100.0))
+                        process_calltime_value.append(bean[metric])
+                        process_calltime_sum += bean[metric]
+                elif 'QueueCallTime' in metric:
+                    if '_num_ops' in metric:
+                        queue_calltime_count = bean[metric]
+                        queue_calltime_key = 'QueueCallTime'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        queue_calltime_percentile.append(str(float(per) / 100.0))
+                        queue_calltime_value.append(bean[metric])
+                        queue_calltime_sum += bean[metric]
+                elif 'ResponseSize' in metric:
+                    if '_num_ops' in metric:
+                        response_count = bean[metric]
+                        response_key = 'ResponseSize'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        response_percentile.append(str(float(per) / 100.0))
+                        response_value.append(bean[metric])
+                        response_sum += bean[metric]
+                elif 'RequestSize' in metric:
+                    if '_num_ops' in metric:
+                        request_count = bean[metric]
+                        request_key = 'RequestSize'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        request_percentile.append(str(float(per) / 100.0))
+                        request_value.append(bean[metric])
+                        request_sum += bean[metric]
+                elif 'exceptions' in metric:
+                    key = 'exceptions'
+                    new_label = label
+                    if 'exceptions' == metric:
+                        type = "sum"
+                    else:
+                        type = metric.split(".")[1]
+                    self._hadoop_hbase_metrics['IPC'][key].add_metric(new_label + [type],
+                                                                    bean[metric] if metric in bean and bean[metric] else 0)
                 else:
-                    per = metric.split("_")[1].split("th")[0]
-                    total_calltime_percentile.append(str(float(per) / 100.0))
-                    total_calltime_value.append(bean[metric])
-                    total_calltime_sum += bean[metric]
-            elif 'ProcessCallTime' in metric:
-                if '_num_ops' in metric:
-                    process_calltime_count = bean[metric]
-                    process_calltime_key = 'ProcessCallTime'
-                else:
-                    per = metric.split("_")[1].split("th")[0]
-                    process_calltime_percentile.append(str(float(per) / 100.0))
-                    process_calltime_value.append(bean[metric])
-                    process_calltime_sum += bean[metric]
-            elif 'QueueCallTime' in metric:
-                if '_num_ops' in metric:
-                    queue_calltime_count = bean[metric]
-                    queue_calltime_key = 'QueueCallTime'
-                else:
-                    per = metric.split("_")[1].split("th")[0]
-                    queue_calltime_percentile.append(str(float(per) / 100.0))
-                    queue_calltime_value.append(bean[metric])
-                    queue_calltime_sum += bean[metric]
-            elif 'ResponseSize' in metric:
-                if '_num_ops' in metric:
-                    response_count = bean[metric]
-                    response_key = 'ResponseSize'
-                else:
-                    per = metric.split("_")[1].split("th")[0]
-                    response_percentile.append(str(float(per) / 100.0))
-                    response_value.append(bean[metric])
-                    response_sum += bean[metric]
-            elif 'RequestSize' in metric:
-                if '_num_ops' in metric:
-                    request_count = bean[metric]
-                    request_key = 'RequestSize'
-                else:
-                    per = metric.split("_")[1].split("th")[0]
-                    request_percentile.append(str(float(per) / 100.0))
-                    request_value.append(bean[metric])
-                    request_sum += bean[metric]
-            elif 'exceptions' in metric:
-                key = 'exceptions'
-                new_label = label
-                if 'exceptions' == metric:
-                    type = "sum"
-                else:
-                    type = metric.split(".")[1]
-                self._hadoop_hbase_metrics['IPC'][key].add_metric(new_label + [type],
-                                                                  bean[metric] if metric in bean and bean[metric] else 0)
-            else:
-                self._hadoop_hbase_metrics['IPC'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
+                    self._hadoop_hbase_metrics['IPC'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
 
         total_calltime_bucket = zip(total_calltime_percentile, total_calltime_value)
         total_calltime_bucket.sort()
@@ -479,46 +482,47 @@ class HBaseMasterMetricCollector(MetricCol):
         hlog_split_time_percentile, metahlog_split_time_percentile, hlog_split_size_percentile, metahlog_split_size_percentile = [], [], [], []
 
         for metric in self._metrics['FileSystem']:
-            if '_min' in metric or '_max' in metric or '_mean' in metric or 'median' in metric or 'RangeCount_' in metric:
-                self._hadoop_hbase_metrics['FileSystem'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
-            elif 'MetaHlogSplitTime' in metric:
-                if '_num_ops' in metric:
-                    metahlog_split_time_count = bean[metric]
-                    metahlog_split_time_key = 'MetaHlogSplitTime'
+            if metric in bean:
+                if '_min' in metric or '_max' in metric or '_mean' in metric or 'median' in metric or 'RangeCount_' in metric:
+                    self._hadoop_hbase_metrics['FileSystem'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
+                elif 'MetaHlogSplitTime' in metric:
+                    if '_num_ops' in metric:
+                        metahlog_split_time_count = bean[metric]
+                        metahlog_split_time_key = 'MetaHlogSplitTime'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        metahlog_split_time_percentile.append(str(float(per) / 100.0))
+                        metahlog_split_time_value.append(bean[metric])
+                        metahlog_split_time_sum += bean[metric]
+                elif 'HlogSplitTime' in metric:
+                    if '_num_ops' in metric:
+                        hlog_split_time_count = bean[metric]
+                        hlog_split_time_key = 'HlogSplitTime'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        hlog_split_time_percentile.append(str(float(per) / 100.0))
+                        hlog_split_time_value.append(bean[metric])
+                        hlog_split_time_sum += bean[metric]   
+                elif 'MetaHlogSplitSize' in metric:
+                    if '_num_ops' in metric:
+                        metahlog_split_size_count = bean[metric]
+                        metahlog_split_size_key = 'MetaHlogSplitSize'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        metahlog_split_size_percentile.append(str(float(per) / 100.0))
+                        metahlog_split_size_value.append(bean[metric])
+                        metahlog_split_size_sum += bean[metric]                     
+                elif 'HlogSplitSize' in metric:
+                    if '_num_ops' in metric:
+                        hlog_split_size_count = bean[metric]
+                        hlog_split_size_key = 'HlogSplitSize'
+                    else:
+                        per = metric.split("_")[1].split("th")[0]
+                        hlog_split_size_percentile.append(str(float(per) / 100.0))
+                        hlog_split_size_value.append(bean[metric])
+                        hlog_split_size_sum += bean[metric]                        
                 else:
-                    per = metric.split("_")[1].split("th")[0]
-                    metahlog_split_time_percentile.append(str(float(per) / 100.0))
-                    metahlog_split_time_value.append(bean[metric])
-                    metahlog_split_time_sum += bean[metric]
-            elif 'HlogSplitTime' in metric:
-                if '_num_ops' in metric:
-                    hlog_split_time_count = bean[metric]
-                    hlog_split_time_key = 'HlogSplitTime'
-                else:
-                    per = metric.split("_")[1].split("th")[0]
-                    hlog_split_time_percentile.append(str(float(per) / 100.0))
-                    hlog_split_time_value.append(bean[metric])
-                    hlog_split_time_sum += bean[metric]   
-            elif 'MetaHlogSplitSize' in metric:
-                if '_num_ops' in metric:
-                    metahlog_split_size_count = bean[metric]
-                    metahlog_split_size_key = 'MetaHlogSplitSize'
-                else:
-                    per = metric.split("_")[1].split("th")[0]
-                    metahlog_split_size_percentile.append(str(float(per) / 100.0))
-                    metahlog_split_size_value.append(bean[metric])
-                    metahlog_split_size_sum += bean[metric]                     
-            elif 'HlogSplitSize' in metric:
-                if '_num_ops' in metric:
-                    hlog_split_size_count = bean[metric]
-                    hlog_split_size_key = 'HlogSplitSize'
-                else:
-                    per = metric.split("_")[1].split("th")[0]
-                    hlog_split_size_percentile.append(str(float(per) / 100.0))
-                    hlog_split_size_value.append(bean[metric])
-                    hlog_split_size_sum += bean[metric]                        
-            else:
-                self._hadoop_hbase_metrics['FileSystem'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
+                    self._hadoop_hbase_metrics['FileSystem'][metric].add_metric(label, bean[metric] if metric in bean and bean[metric] else 0)
 
         hlog_split_time_bucket = zip(hlog_split_time_percentile, hlog_split_time_value)
         hlog_split_time_bucket.sort()
